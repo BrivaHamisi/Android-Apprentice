@@ -2,6 +2,8 @@ package com.autouserinc.timefighter
 
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.PersistableBundle
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -18,10 +20,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameScoreTextView: TextView
     private lateinit var  timeLeftTextView: TextView
     private lateinit var tapMeButton: Button
+    private val TAG = MainActivity::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        Log.d(TAG, "onCreate called: Score is:$score", )
 
         gameScoreTextView = findViewById(R.id.game_score_text_view)
         timeLeftTextView = findViewById(R.id.time_left_text_view)
@@ -31,6 +35,24 @@ class MainActivity : AppCompatActivity() {
 
         //connect views to Logic
         resetGame()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
+        super.onSaveInstanceState(outState, outPersistentState)
+
+        outState.putInt(SCORE_KEY, score)
+        outState.putInt(TIME_LEFT_KEY, timeLeft)
+        countDownTimer.cancel()
+
+        Log.d(TAG, "onSaveInstanceState: Saving score: $score & Time Left: $timeLeft")
+        countDownTimer.cancel()
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        Log.d(TAG, "OnDestroy called.")
     }
     private fun incrementScore(){
         //Increment the score logic
@@ -75,5 +97,9 @@ class MainActivity : AppCompatActivity() {
         //end game logic
         Toast.makeText(this, getString(R.string.game_over_message, score), Toast.LENGTH_LONG).show()
         resetGame()
+    }
+    companion object {
+        private const val SCORE_KEY = "SCORE_KEY"
+        private const val TIME_LEFT_KEY = "TIME"
     }
 }
