@@ -1,13 +1,18 @@
 package com.autouserinc.timefighter
 
+import android.content.IntentSender.OnFinished
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.PersistableBundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
 
 private var score = 0
 private var gameStarted = false
@@ -31,10 +36,41 @@ class MainActivity : AppCompatActivity() {
         timeLeftTextView = findViewById(R.id.time_left_text_view)
         tapMeButton = findViewById(R.id.tap_me_button)
 
-        tapMeButton.setOnClickListener{ incrementScore() }
+        tapMeButton.setOnClickListener{ view ->
+            val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce)
+            view.startAnimation(bounceAnimation)
+            incrementScore() }
 
         //connect views to Logic
-        resetGame()
+        if(savedInstanceState != null){
+            score = savedInstanceState.getInt(SCORE_KEY)
+            timeLeft = savedInstanceState.getInt(TIME_LEFT_KEY)
+            restoreGame()
+        }else{
+            resetGame()
+        }
+    }
+
+    private fun restoreGame() {
+        val restoredScore = getString(R.string.your_score, score)
+        gameScoreTextView.text = restoredScore
+
+        val restordTime = getString(R.string.time_left, timeLeft)
+        timeLeftTextView.text = restordTime
+
+        countDownTimer = object : CountDownTimer((timeLeft * 1000).toLong(), countDownInterval){
+            override fun onTick(millisUntilFinished: Long){
+                timeLeft = millisUntilFinished.toInt()/1000
+                val timeleftString= getString(R.string.time_left, timeLeft)
+                timeLeftTextView.text = timeleftString
+            }
+
+            override fun onFinish() {
+                endGame()
+            }
+        }
+        countDownTimer.start()
+        gameStarted = true
     }
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
@@ -54,6 +90,33 @@ class MainActivity : AppCompatActivity() {
 
         Log.d(TAG, "OnDestroy called.")
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        //If the menu; this adds to the action bar if it is present
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.about_item){
+            showInfo()
+        }
+        return true
+    }
+
+    private fun showInfo() {
+        val dialogTitle = getString(R.string.about_title,
+            BuildConfig.VERSION_NAME)
+        val dialogMessage = getString(R.string.about_message)
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(dialogTitle)
+        builder.setMessage(dialogMessage)
+        builder.create().show()
+    }
+
+
     private fun incrementScore(){
         //Increment the score logic
         if (!gameStarted){
