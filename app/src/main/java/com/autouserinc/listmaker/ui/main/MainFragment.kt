@@ -6,10 +6,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.autouserinc.listmaker.R
+import com.autouserinc.listmaker.databinding.FragmentMainBinding
+import org.intellij.lang.annotations.JdkConstants.ListSelectionMode
+
 
 class MainFragment : Fragment() {
-
+    private lateinit var binding: FragmentMainBinding
     companion object {
         fun newInstance() = MainFragment()
     }
@@ -26,7 +30,11 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_main, container, false)
+        binding = FragmentMainBinding.inflate(inflater, container, false)
+
+        binding.listRecyclerview.layoutManager = LinearLayoutManager(requireContext())
+        binding.listRecyclerview.adapter = ListSelectionRecyclerViewAdapter()
+        return binding.root
     }
 
 }
